@@ -21,18 +21,18 @@ using System.Collections.Generic;
 using System.Threading;
 using MCGalaxy.Games;
 
-namespace MCGalaxy.Modules.Games.ZS
+namespace MCGalaxy.Modules.Games.FootballGame
 {    
     public partial class FootballGame : RoundsGame 
     {
-        string lastKiller = "";
-        int infectCombo = 0;
+        string lastScorer = "";
+        int goalCombo = 0;
         
         protected override void DoRound() {
             if (!Running) return;
 
             ResetPledges();
-            List<Player> players = DoRoundCountdown(Config.InfectionCountdown);
+            List<Player> players = DoRoundCountdown(Config.FootballCountdown);
             if (players == null) return;
 
             if (!Running) return;
@@ -46,7 +46,7 @@ namespace MCGalaxy.Modules.Games.ZS
         void ResetPledges() {
             foreach (Player pl in GetPlayers())
             {
-                Get(pl).PledgeSurvive = false;
+                Get(pl).PledgeWin = false;
             }
         }
         
@@ -112,7 +112,7 @@ namespace MCGalaxy.Modules.Games.ZS
             int dist = (int)(Config.HitboxDist * 32);
             foreach (Player killer in deadList)
             {
-                ZSData killerData = Get(killer);
+                FootballData killerData = Get(killer);
                 killer.infected = true;
                 aliveList = Alive.Items;
 

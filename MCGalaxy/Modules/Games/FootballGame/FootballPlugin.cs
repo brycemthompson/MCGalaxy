@@ -15,23 +15,20 @@
     or implied. See the Licenses for the specific language governing
     permissions and limitations under the Licenses.
  */
-using System;
-using System.IO;
-using MCGalaxy.Config;
 using MCGalaxy.Events.ServerEvents;
 
-namespace MCGalaxy.Modules.Games.ZS
+namespace MCGalaxy.Modules.Games.FootballGame
 {
     public sealed class FootballPlugin : Plugin 
     {
-        public override string name { get { return "ZS"; } }
-        static Command cmdZS = new CmdFootballGame();
+        public override string name { get { return "Football"; } }
+        static Command cmdFootballGame = new CmdFootballGame();
         
         public override void Load(bool startup) {
-            Command.Register(cmdZS);
+            Command.Register(cmdFootballGame);
             
             FootballGame game      = FootballGame.Instance;
-            game.Config.Path = "properties/zombiesurvival.properties";
+            game.Config.Path = "properties/footballgame.properties";
             game.ReloadConfig();
             game.AutoStart();
             
@@ -41,7 +38,7 @@ namespace MCGalaxy.Modules.Games.ZS
         public override void Unload(bool shutdown) {
             FootballGame game = FootballGame.Instance;
             OnConfigUpdatedEvent.Unregister(game.ReloadConfig);
-            Command.Unregister(cmdZS);
+            Command.Unregister(cmdFootballGame);
         }
     }
 }

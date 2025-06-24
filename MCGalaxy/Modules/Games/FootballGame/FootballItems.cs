@@ -39,7 +39,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             
             if (!CheckPrice(p, count * Price, (count * 10) + " blocks")) return;
             
-            ZSData data = FootballGame.Get(p);
+            FootballData data = FootballGame.Get(p);
             data.BlocksLeft += 10 * count;
             Economy.MakePurchase(p, Price * count, "%310Blocks: " + (10 * count));
         }
@@ -81,40 +81,40 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
     }
     
-    sealed class InfectMessageItem : SimpleItem 
+    sealed class GoalMessageItem : SimpleItem 
     {    
-        public InfectMessageItem() {
-            Aliases = new string[] { "infectmessage", "infectmsg" };
+        public GoalMessageItem() {
+            Aliases = new string[] { "goalmessage", "goalmsg" };
             Enabled = true;
             Price   = 150;
         }
         
-        public override string Name { get { return "InfectMessage"; } }
+        public override string Name { get { return "GoalMessage"; } }
         
         public override void OnPurchase(Player p, string msg) {
             if (msg.Length == 0) { OnStoreCommand(p); return; }
             
-            if (!msg.Contains(FootballConfig.InfectZombiePlaceholder) && !msg.Contains(FootballConfig.InfectHumanPlaceholder)) {
-                p.Message("You need to include a \"{0}\" (placeholder for zombie player) " +
-                               "and/or a \"{1}\" (placeholder for human player) in the infect message.",
-                               FootballConfig.InfectZombiePlaceholder, FootballConfig.InfectHumanPlaceholder);
+            if (!msg.Contains(FootballConfig.ScorerPlaceholder)) {
+                p.Message("You need to include a \"{0}\" (placeholder for scoring player name) " +
+                               "in the goal message.",
+                               FootballConfig.ScorerPlaceholder);
                 return;
             }
             
             if (!CheckPrice(p)) return;
-            ZSData data = FootballGame.Get(p);
-            if (data.InfectMessages == null) data.InfectMessages = new List<string>();
-            data.InfectMessages.Add(msg);
+            FootballData data = FootballGame.Get(p);
+            if (data.GoalMessages == null) data.GoalMessages = new List<string>();
+            data.GoalMessages.Add(msg);
             
-            FootballConfig.AppendPlayerInfectMessage(p.name, msg);
-            p.Message("&aAdded infect message: &f" + msg);
-            Economy.MakePurchase(p, Price, "%3InfectMessage: " + msg);
+            FootballConfig.AppendPlayerGoalMessage(p.name, msg);
+            p.Message("&aAdded goal message: &f" + msg);
+            Economy.MakePurchase(p, Price, "%3GoalMessage: " + msg);
         }
 
         protected internal override void OnStoreCommand(Player p) {
             base.OnStoreCommand(p);
-            p.Message("&HInfect messages must include either \"{0}\" or \"{1}\" (placeholders for zombie and/or human player) in them",
-                FootballConfig.InfectZombiePlaceholder, FootballConfig.InfectHumanPlaceholder);
+            p.Message("&HGoal messages must include \"{0}\" (placeholder for scoring player name) in them",
+                FootballConfig.ScorerPlaceholder);
         }
     }
     
@@ -122,7 +122,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
     {    
         public InvisibilityItem() {
             // old aliases for when invisibility and zombie invisibility were seperate
-            Aliases = new string[] { "invisibility", "invisible", "invis", "zinvisibility", "zinvisible", "zinvis" };
+            Aliases = new string[] { "invisibility", "invisible", "invis" };
             Enabled = true;
             Price   = 3;
         }
@@ -133,14 +133,14 @@ namespace MCGalaxy.Modules.Games.FootballGame
             if (!CheckPrice(p, Price, "an invisibility potion")) return;
             if (!FootballGame.Instance.RoundInProgress) {
                 p.Message("You can only buy an invisiblity potion " +
-                          "when a round of zombie survival is in progress."); return;
+                          "when a round of football game is in progress."); return;
             }
             
-            ZSData data  = FootballGame.Get(p);
+            FootballData data  = FootballGame.Get(p);
             if (data.Invisible) { p.Message("You are already invisible."); return; }
             FootballConfig cfg = FootballGame.Instance.Config;
             
-            int maxPotions = p.infected ? cfg.ZombieInvisibilityPotions : cfg.InvisibilityPotions;
+            int maxPotions = cfg.InvisibilityPotions;
             if (data.InvisibilityPotions >= maxPotions) {
                 p.Message("You cannot buy any more invisibility potions this round."); return;
             }
@@ -150,7 +150,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 p.Message("You cannot buy an invisibility potion during the last minute of a round."); return;
             }
             
-            int duration = p.infected ? cfg.ZombieInvisibilityDuration : cfg.InvisibilityDuration;
+            int duration = cfg.InvisibilityDuration;
             data.InvisibilityPotions++;
             int left = maxPotions - data.InvisibilityPotions;
             
@@ -164,66 +164,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
             p.Message("&T/Buy " + Name);
             OutputItemInfo(p);
             
-            p.Message("Humans: Makes you invisible to zombies for {0} seconds", cfg.InvisibilityDuration);
-            p.Message("  &WYou can still get infected while invisible");
-            p.Message("Zombies: Makes you invisible to humans for {0} seconds", cfg.ZombieInvisibilityDuration);
-            p.Message("  &WYou can still infect humans while invisible");
-        }
-    }
-    
-    sealed class ReviveItem : SimpleItem 
-    {   
-        public ReviveItem() {
-            Aliases = new string[] { "revive", "rev" };
-            Enabled = true;
-            Price   = 7;
-        }
-        
-        public override string Name { get { return "Revive"; } }
-        
-        public override void OnPurchase(Player p, string args) {
-            if (!CheckPrice(p, Price, "a revive potion")) return;
-            if (!FootballGame.Instance.RoundInProgress) {
-                p.Message("You can only buy a revive potion " +
-                          "when a round of zombie survival is in progress."); return;
-            }
-            
-            ZSData data = FootballGame.Get(p);
-            if (!p.infected) {
-                p.Message("You are already a human."); return;
-            }
-            FootballConfig cfg = FootballGame.Instance.Config;
-            
-            DateTime end = FootballGame.Instance.RoundEnd;
-            if (DateTime.UtcNow.AddSeconds(cfg.ReviveNoTime) > end) {
-                p.Message(cfg.ReviveNoTimeMessage); return;
-            }
-            int count = FootballGame.Instance.Infected.Count;
-            if (count < cfg.ReviveFewZombies) {
-                p.Message(cfg.ReviveFewZombiesMessage); return;
-            }
-            if (data.RevivesUsed >= cfg.ReviveTimes) {
-                p.Message("You cannot buy any more revive potions."); return;
-            }
-            if (data.TimeInfected.AddSeconds(cfg.ReviveTooSlow) < DateTime.UtcNow) {
-                p.Message("&WYou can only revive within the first {0} seconds after you were infected.",
-                          cfg.ReviveTooSlow); return;
-            }
-            
-            FootballGame.Instance.AttemptRevive(p);
-            data.RevivesUsed++;
-            Economy.MakePurchase(p, Price, "%3Revive:");
-        }
-        
-        protected internal override void OnStoreCommand(Player p) {
-            FootballConfig cfg = FootballGame.Instance.Config;
-            p.Message("&T/Buy " + Name);
-            OutputItemInfo(p);
-            
-            p.Message("Lets you rejoin the humans - &Wnot guaranteed to always work");
-            p.Message("  Cannot be used in the last &a{0} &Sseconds of a round.", cfg.ReviveNoTime);
-            p.Message("  Can only be used within &a{0} &Sseconds after being infected.", cfg.ReviveTooSlow);
-            p.Message("  Can only buy &a{0} &Srevive potions per round.", cfg.ReviveTimes);
+            p.Message("Makes you invisible to the other team for {0} seconds", cfg.InvisibilityDuration);
+            p.Message("  &WYou can still play the game while invisible");
         }
     }
 }

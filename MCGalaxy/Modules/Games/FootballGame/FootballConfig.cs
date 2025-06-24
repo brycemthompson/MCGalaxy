@@ -92,7 +92,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
 
         public const string ScorerPlaceholder = "<name>";
-        const string ScorerObjectPlaceholder = "<object>";
+        public const string ScorerObjectPlaceholder = "<object>";
 
         static string[] defaultMessages = new string[] { "<name> scored!", "<name> slammed the ball in the goal!",
                                                      "GOALLLL by <name>"};
