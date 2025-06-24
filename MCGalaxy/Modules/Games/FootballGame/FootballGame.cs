@@ -18,6 +18,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MCGalaxy.Games;
 using MCGalaxy.SQL;
 
@@ -152,35 +153,9 @@ namespace MCGalaxy.Modules.Games.FootballGame
             else return null; // Player is not on any team
         }
 
-        public void InfectPlayer(Player p, Player killer) {
-            if (!RoundInProgress) return;
-            Infected.Add(p);
-            Alive.Remove(p);
-            
-            ZSData data = Get(p);
-            data.CurrentRoundsSurvived = 0;
-            data.TimeInfected = DateTime.UtcNow;
-            
-            p.SetPrefix();
-            UpdatePlayer(p, data, true);
-            RespawnPlayer(p);
-            
-            CheckHumanPledge(p, killer);
-            CheckBounty(p, killer);
-        }
-
-        public void DisinfectPlayer(Player p) {
-            if (!RoundInProgress) return;
-            Infected.Remove(p);
-            Alive.Add(p);
-            
-            ZSData data = Get(p);
-            UpdatePlayer(p, data, false);
-            RespawnPlayer(p);
-        }
         public void ResetGoals() {
-            TeamAGoals = 0;
-            TeamBGoals = 0;
+            PandaTeam.Score = 0;
+            HomerTeam.Score = 0;
         }
 
         static void ResetRoundState(Player p, FootballData data) {
@@ -188,7 +163,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             data.InvisibilityPotions = 0;
         }
         
-        void UpdatePlayer(Player p, ZSData data, bool infected) {
+        void UpdatePlayer(Player p, FootballData data, bool infected) {
             p.infected      = infected;
             data.BlocksLeft = infected ? 25 : 50;
             
@@ -210,24 +185,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             HandleJoinedLevel(p, Map, Map, ref announce);
         }
 
-        public override void PlayerLeftGame(Player p) {
-            Alive.Remove(p);
-            Infected.Remove(p);
-            p.infected = false;
-            RemoveAssociatedBounties(p);
-            
-            if (!Running || !RoundInProgress || Infected.Count > 0) return;
-            Random rnd = new Random();
-            Player[] alive = Alive.Items;
-            if (alive.Length == 0) return;
-            
-            // Auto continue infection
-            Player zombie = alive[rnd.Next(alive.Length)];
-            Map.Message("&c" + zombie.DisplayName + " &Scontinued the infection!");
-            InfectPlayer(zombie, null);
-        }
-
-        public override string GetPrefix(Player p) {
+        /*public override string GetPrefix(Player p) {
             if (!Running) return "";
             int winStreak = Get(p).CurrentRoundsSurvived;
             
@@ -236,10 +194,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
             else if (winStreak == 3) return "&6*" + p.color;
             else if (winStreak > 0)  return "&6"  + winStreak + p.color;
             return "";
-        }
+        }*/
         
         public void GoInvisible(Player p, int duration) {
-            ZSData data    = Get(p);
+            FootballData data    = Get(p);
             data.Invisible = true;
             data.InvisibilityEnd = DateTime.UtcNow.AddSeconds(duration);
 
@@ -264,10 +222,11 @@ namespace MCGalaxy.Modules.Games.FootballGame
         protected override string FormatStatus1(Player p) {
             int left = (int)(RoundEnd - DateTime.UtcNow).TotalSeconds;
             string timespan = GetTimeLeft(left);
+            int playerCount = PlayerInfo.Online.Items.Count();
             
-            string format = timespan.Length == 0 ? "&a{0} &Salive &S(map: {1})" :
-                "&a{0} &Salive &S({2}, map: {1})";
-            return string.Format(format, Alive.Count, Map.MapName, timespan);
+            string format = timespan.Length == 0 ? "&a{0} &Splayers &S(map: {1})" :
+                "&a{0} &Splayers &S({2}, map: {1})";
+            return string.Format(format, playerCount, Map.MapName, timespan);
         }
         
         protected override string FormatStatus2(Player p) {
