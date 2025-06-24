@@ -48,7 +48,7 @@ namespace MCGalaxy.Gui
         
         GamesHelper GetGameHelper(IGame game) {
             // TODO: Find a better way of doing this
-            if (game == ZSGame.Instance)  return zsHelper;
+            if (game == FootballGame.Instance)  return zsHelper;
             if (game == CTFGame.Instance) return ctfHelper;
             if (game == LSGame.Instance)  return lsHelper;
             if (game == TWGame.Instance)  return twHelper;
@@ -70,12 +70,12 @@ namespace MCGalaxy.Gui
         
         void LoadZSSettings(string[] allMaps) {
             zsHelper = new GamesHelper(
-                ZSGame.Instance, zs_cbStart, zs_cbMap, zs_cbMain,
+                FootballGame.Instance, zs_cbStart, zs_cbMap, zs_cbMain,
                 zs_btnStart, zs_btnStop, zs_btnEnd,
                 zs_btnAdd, zs_btnRemove, zs_lstUsed, zs_lstNotUsed);
             zsHelper.Load(allMaps);
             
-            ZSConfig cfg = ZSGame.Instance.Config;
+            FootballConfig cfg = FootballGame.Instance.Config;
             zs_numInvHumanDur.Value  = cfg.InvisibilityDuration;
             zs_numInvHumanMax.Value  = cfg.InvisibilityPotions;
             zs_numInvZombieDur.Value = cfg.ZombieInvisibilityDuration;
@@ -91,7 +91,7 @@ namespace MCGalaxy.Gui
         
         void SaveZSSettings() {
             try {
-                ZSConfig cfg = ZSGame.Instance.Config;
+                FootballConfig cfg = FootballGame.Instance.Config;
                 cfg.InvisibilityDuration = (int)zs_numInvHumanDur.Value;
                 cfg.InvisibilityPotions  = (int)zs_numInvHumanMax.Value;
                 cfg.ZombieInvisibilityDuration = (int)zs_numInvZombieDur.Value;
