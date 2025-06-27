@@ -139,7 +139,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             if (RoundInProgress) {
                 p.Message("You joined in the middle of a round. &aHelp out your team!");
                 data.BlocksLeft = 25;
-                InfectPlayer(p, null);
+                // TODO: Spawn the player in the correct team spawn
             }
 
             double startLeft = (RoundStart - DateTime.UtcNow).TotalSeconds;
@@ -224,7 +224,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 || collide == CollideType.LiquidLava;
         }
         
-        static bool CheckCoords(Player p, ZSData data, ushort x, ushort y, ushort z) {
+        static bool CheckCoords(Player p, FootballData data, ushort x, ushort y, ushort z) {
             if (data.LastY != y - 1 || data.LastX != x || data.LastZ != z) return false;
             int minX = (p.Pos.X - 8) / 32, minZ = (p.Pos.Z - 8) / 32;
             int maxX = (p.Pos.X + 8) / 32, maxZ = (p.Pos.Z + 8) / 32;
@@ -234,7 +234,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 || (maxX == x && minZ == z) || (maxX == x && maxZ == z);
         }
         
-        static bool WarnPillaring(Player p, ZSData data, ushort x, ushort y, ushort z, bool nonReplacable) {
+        static bool WarnPillaring(Player p, FootballData data, ushort x, ushort y, ushort z, bool nonReplacable) {
             if ((!nonReplacable && data.BlocksStacked == 2) || (nonReplacable && data.BlocksStacked == 1)) {
                 TimeSpan delta = DateTime.UtcNow - data.LastPillarWarn;
                 if (delta.TotalSeconds >= 5) {

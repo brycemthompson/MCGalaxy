@@ -147,50 +147,34 @@ namespace MCGalaxy.Modules.Games.FootballGame
         
         // TODO: Look into changing these commands as needed
         static void HookCommands() {
-            Command.TryRegister(true, cmdAka, cmdAlive, cmdBounties, cmdBounty,
-                                cmdDisinfect, cmdHuman, cmdInfect, cmdInfected,
-                                cmdLastLevels, cmdQueue, cmdShowQueue);
+            Command.TryRegister(true, cmdLastLevels, cmdQueue, cmdShowQueue);
         }
         
         static void UnhookCommands() {
-            Command.Unregister(cmdAka, cmdAlive, cmdBounties, cmdBounty,
-                               cmdDisinfect, cmdHuman, cmdInfect, cmdInfected,
-                               cmdLastLevels, cmdQueue, cmdShowQueue);
+            Command.Unregister(cmdLastLevels, cmdQueue, cmdShowQueue);
         }
         
-        static Command cmdAka        = new CmdAka();
-        static Command cmdAlive      = new CmdAlive();
-        static Command cmdBounties   = new CmdBounties();
-        static Command cmdBounty     = new CmdBounty();
-        static Command cmdDisinfect  = new CmdDisInfect();
-        static Command cmdHuman      = new CmdHuman();
-        static Command cmdInfect     = new CmdInfect();
-        static Command cmdInfected   = new CmdInfected();
         static Command cmdLastLevels = new CmdLastLevels();
         static Command cmdQueue      = new CmdQueue();
         static Command cmdShowQueue  = new CmdShowQueue();
         
-        
         static void HookItems() {
             Economy.RegisterItem(itemQueue);
             Economy.RegisterItem(itemBlocks);
-            Economy.RegisterItem(itemRevive);
-            Economy.RegisterItem(itemInfectMsg);
+            Economy.RegisterItem(itemGoalMsg);
             Economy.RegisterItem(itemInv);
         }
         
         static void UnhookItems() {
             Economy.Items.Remove(itemQueue);
             Economy.Items.Remove(itemBlocks);
-            Economy.Items.Remove(itemRevive);
-            Economy.Items.Remove(itemInfectMsg);
+            Economy.Items.Remove(itemGoalMsg);
             Economy.Items.Remove(itemInv);
         }       
         
         static Item itemQueue     = new QueueLevelItem();
         static Item itemBlocks    = new BlocksItem();
-        static Item itemRevive    = new ReviveItem();
-        static Item itemInfectMsg = new InfectMessageItem();
+        static Item itemGoalMsg = new GoalMessageItem();
         static Item itemInv       = new InvisibilityItem();
     }
 }

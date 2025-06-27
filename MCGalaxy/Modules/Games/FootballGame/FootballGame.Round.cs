@@ -18,6 +18,7 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using MCGalaxy.Games;
 
@@ -58,9 +59,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             Player[] online = PlayerInfo.Online.Items;
             foreach (Player p in online) {
                 if (p.level != Map || p.Game.Referee) continue;
-                Alive.Add(p);
             }
-            Infected.Clear();
             
             Random rnd = new Random();
             Player first;
@@ -69,7 +68,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 QueuedZombie = null;
             } while (first == null || first.level != Map);
             
-            Map.Message("&c" + first.DisplayName + " &Sstarted the infection!");
+            Map.Message("&S... and the game has started!");
             InfectPlayer(first, null);
         }
         
