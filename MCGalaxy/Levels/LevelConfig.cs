@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using MCGalaxy.Config;
 using MCGalaxy.Games;
+using MCGalaxy.Modules.Games.FootballGame;
 using MCGalaxy.Modules.Games.ZS;
 using MCGalaxy.Network;
 using BlockID = System.UInt16;
@@ -338,6 +339,10 @@ namespace MCGalaxy
         public bool Drawing = true;
         [ConfigInt("RoundsPlayed", "Game", 0)]
         public int RoundsPlayed = 0;
+        [ConfigInt("RoundsPandaTeamWon", "Game", 0)]
+        public int RoundsPandaTeamWon = 0;
+        [ConfigInt("RoundsHomerTeamWon", "Game", 0)]
+        public int RoundsHomerTeamWon = 0;
         [ConfigInt("RoundsHumanWon", "Game", 0)]
         public int RoundsHumanWon = 0;
         

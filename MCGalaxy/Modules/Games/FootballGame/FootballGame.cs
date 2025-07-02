@@ -74,13 +74,15 @@ namespace MCGalaxy.Modules.Games.FootballGame
             FootballData data = TryGet(p);
             if (data != null) return data;
             data = new FootballData();
-            
+
             // TODO: Is this even thread-safe
             // TODO don't load here, add a LoadGoalMessages method
-            data.GoalMessages = FootballConfig.LoadPlayerGoalMessages(p.name);
             FootballStats s = LoadStats(p.name);
-            data.TotalWon = s.TotalWon;     data.TotalLost = s.TotalLost;
-            data.MaxRoundGoals = s.MaxRoundGoals; data.MaxConsecutiveGoals = s.MaxConsecutiveGoals;
+            data.GoalMessages = FootballConfig.LoadPlayerGoalMessages(p.name);
+            data.TotalWon = s.TotalWon;     
+            data.TotalLost = s.TotalLost;
+            data.MaxRoundGoals = s.MaxRoundGoals; 
+            data.MaxConsecutiveGoals = s.MaxConsecutiveGoals;
             data.MaxConsecutiveWins = s.MaxConsecutiveWins;
             
             p.Extras[footballExtrasKey] = data;
@@ -88,7 +90,9 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
 
         internal static FootballData TryGet(Player p) {
-            object data; p.Extras.TryGet(footballExtrasKey, out data); return (FootballData)data;
+            object data; 
+            p.Extras.TryGet(footballExtrasKey, out data); 
+            return (FootballData)data;
         }
         
         // TODO: Move football map config to per-game properties

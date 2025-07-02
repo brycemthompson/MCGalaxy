@@ -6,32 +6,30 @@ namespace MCGalaxy.Modules.Games.FootballGame {
     public class FootballTeam {
         public string Name { get; set; }
         public int Score { get; set; }
-        public List<string> Members { get; private set; }
-        public const string FOOTBALL_TEAM_PATH = "extra/footballteams/";
+        public List<Player> Players { get; private set; }
+        //public const string FOOTBALL_TEAM_PATH = "extra/footballteams/";
 
         public FootballTeam(string name) {
             Name = name;
             Score = 0;
-            Members = GetMembers();
+            Players = new List<Player>();
         }
 
-        public void AddMember(string playerName) {
-            if (!Members.Contains(playerName)) {
-                Members.Add(playerName);
+        public void AddPlayer(Player p) {
+            if (!Players.Contains(p)) {
+                Players.Add(p);
             }
-            SaveMembers();
         }
 
         public bool HasMember(Player p) {
-            return this.Members.Contains(p.truename);
+            return this.Players.Contains(p);
         }
 
-        public void RemoveMember(string playerName) {
-            Members.Remove(playerName);
-            SaveMembers();
+        public void RemoveMember(Player p) {
+            Players.Remove(p);
         }
 
-        public List<string> GetMembers() {
+        /*public List<string> GetMembers() {
             if (!File.Exists(FOOTBALL_TEAM_PATH + Name + ".txt")) {
                 File.Create(FOOTBALL_TEAM_PATH + Name + ".txt").Close();
                 return new List<string>();
@@ -41,10 +39,11 @@ namespace MCGalaxy.Modules.Games.FootballGame {
 
         public void SaveMembers() {
             File.WriteAllLines(FOOTBALL_TEAM_PATH + Name + ".txt", Members.ToArray());
-        }
+        }*/
 
         public override string ToString() {
-            return $"{Name} (Score: {Score}, Players: {string.Join(", ", Members)})";
+            List<string> playerNames = Players.Select(p => p.ColoredName).ToList();
+            return $"{Name} (Score: {Score}, Players: {string.Join(", ", playerNames)})";
         }
     }
 }

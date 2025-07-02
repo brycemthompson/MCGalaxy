@@ -50,37 +50,39 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 Get(pl).PledgeWin = false;
             }
         }
-        
+
         void StartRound(List<Player> players) {
             TimeSpan duration = Map.Config.RoundTime;
             Map.Message("This round will last for &a" + duration.Shorten(true, true));
             RoundEnd = DateTime.UtcNow.Add(duration);
-            
-            Player[] online = PlayerInfo.Online.Items;
-            foreach (Player p in online) {
-                if (p.level != Map || p.Game.Referee) continue;
-            }
-            
-            Random rnd = new Random();
-            Player first;
-            do {
-                first = QueuedZombie != null ? PlayerInfo.FindExact(QueuedZombie) : players[rnd.Next(players.Count)];
-                QueuedZombie = null;
-            } while (first == null || first.level != Map);
-            
-            Map.Message("&S... and the game has started!");
-            InfectPlayer(first, null);
+            RandomlyAssignTeams(players);
         }
+
+        void RandomlyAssignTeams(List<Player> players) {
+            Random rnd = new Random();
+            bool teamFlipper = true;
+            for (int i = 0; i < players.Count; i++) {
+                int playerIndex = rnd.Next(0, players.Count);
+                Player p = players[playerIndex];
+
+                if (teamFlipper) {
+                    PandaTeam.AddPlayer(p);
+                }
+                else {
+                    HomerTeam.AddPlayer(p);
+                }
+                players.Remove(p);
+            }
+        }
+    
         
         void DoCoreGame() {
-            Player[] alive = Alive.Items;
             string lastTimeLeft = null;
             int lastCountdown = -1;
             Random random = new Random();
             
-            while (alive.Length > 0 && Running && RoundInProgress) {
-                Player[] infected = Infected.Items;
-                // Round ended with some players still alive
+            while (Running && RoundInProgress) {
+                
                 int seconds = (int)(RoundEnd - DateTime.UtcNow).TotalSeconds;
                 if (seconds <= 0) {
                     MessageMap(CpeMessageType.Announcement, ""); return;
@@ -100,14 +102,13 @@ namespace MCGalaxy.Modules.Games.FootballGame
                     lastTimeLeft = timeLeft;
                 }
                 
-                DoCollisions(alive, infected, random);
+                //DoCollisions(alive, infected, random);
                 CheckInvisibilityTime();
-                Thread.Sleep(Config.CollisionsCheckInterval);
-                alive = Alive.Items;
+                //Thread.Sleep(Config.CollisionsCheckInterval);
             }
         }
         
-        void DoCollisions(Player[] aliveList, Player[] deadList, Random random) {
+        /*void DoCollisions(Player[] aliveList, Player[] deadList, Random random) {
             int dist = (int)(Config.HitboxDist * 32);
             foreach (Player killer in deadList)
             {
@@ -147,7 +148,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
                     }
                 }
             }
-        }
+        }*/
         
         void CheckInvisibilityTime() {
             DateTime now = DateTime.UtcNow;
@@ -155,7 +156,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             foreach (Player p in players) 
             {
                 if (p.level != Map) continue;
-                ZSData data = Get(p);
+                FootballData data = Get(p);
                 if (!data.Invisible) continue;
                 
                 DateTime end = data.InvisibilityEnd;
@@ -178,48 +179,17 @@ namespace MCGalaxy.Modules.Games.FootballGame
             }
         }
         
-        void CheckHumanPledge(Player p, Player killer) {
-            ZSData data = Get(p);
-            if (!data.PledgeSurvive) return;
-            data.PledgeSurvive = false;
-            Map.Message("&c" + p.DisplayName + " &Sbroke "+p.pronouns.Object+" pledge of not being infected.");
-            
-            if (killer == null) {
-                p.Message("As this was an automatic infection, you have not lost any &3" + Server.Config.Currency);
-            } else {
-                p.SetMoney(Math.Max(p.money - 2, 0));
-            }
-        }
-        
-        void CheckBounty(Player p, Player pKiller) {
-            BountyData bounty = BountyData.Find(p.name);
-            if (bounty == null) return;
-            BountyData.Bounties.Remove(bounty);
-            
-            Player setter = PlayerInfo.FindExact(bounty.Origin);
-            if (pKiller == null) {
-                Map.Message("Bounty on " + p.ColoredName + " &Sis no longer active");
-                if (setter != null) setter.SetMoney(setter.money + bounty.Amount);
-            } else if (setter == null) {
-                pKiller.Message("Cannot collect the bounty, as the player who set it is offline.");
-            } else {
-                Map.Message("&c" + pKiller.DisplayName + " &Scollected the bounty of &a" +
-                              bounty.Amount + " &S" + Server.Config.Currency + " on " + p.ColoredName);
-                pKiller.SetMoney(pKiller.money + bounty.Amount);
-            }
-        }
-        
-        void ShowInfectMessage(Random random, Player pAlive, Player pKiller) {
+        void ShowGoalMessage(Random random, Player scorer) {
             string text = null;
-            List<string> infectMsgs = Get(pKiller).InfectMessages;
+            List<string> goalMsgs = Get(scorer).GoalMessages;
             
-            if (infectMsgs != null && infectMsgs.Count > 0 && random.Next(0, 10) < 5) {
-                text = infectMsgs[random.Next(infectMsgs.Count)];
+            if (goalMsgs != null && goalMsgs.Count > 0 && random.Next(0, 10) < 5) {
+                text = goalMsgs[random.Next(goalMsgs.Count)];
             } else {
-                text = infectMessages[random.Next(infectMessages.Count)];
+                text = goalMessages[random.Next(goalMessages.Count)];
             }
 
-            Map.Message(FootballConfig.FormatInfectMessage(text, pKiller, pAlive));
+            Map.Message(FootballConfig.FormatGoalMessage(text, scorer));
         }
 
         internal static void RespawnPlayer(Player p) {
@@ -235,13 +205,22 @@ namespace MCGalaxy.Modules.Games.FootballGame
             UpdateAllStatus1();
             
             if (!Running) return;
-            Player[] alive = Alive.Items, dead = Infected.Items;
             Map.Message("&aThe game has ended!");
-            
-            if (alive.Length == 0) Map.Message("&4Zombies have won this round.");
-            else if (alive.Length == 1) Map.Message("&2Congratulations to the sole survivor:");
-            else Map.Message("&2Congratulations to the survivors:");
-            AnnounceWinners(alive, dead);
+
+            // Determine which team won
+            if (PandaTeam.Score > HomerTeam.Score) {
+                Map.Message("&SThe &bPanda Team &Shas won this round!");
+                Map.Config.RoundsPandaTeamWon++;
+            }
+            else if (HomerTeam.Score > PandaTeam.Score) {
+                Map.Message("&SThe &eHomer Team &Shas won this round!");
+                Map.Config.RoundsHomerTeamWon++;
+            }
+            else {
+                Map.Message("&SBoth teams have tied this round!");
+            }
+
+            AnnounceWinners(PandaTeam.Players.ToArray(), HomerTeam.Players.ToArray());
             
             Map.Config.RoundsPlayed++;
             if (alive.Length > 0) {
