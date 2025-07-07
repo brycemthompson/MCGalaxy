@@ -557,7 +557,6 @@
     <Compile Include="Modules\Games\CTF\CtfGame.Round.cs" />
     <Compile Include="Modules\Games\CTF\CtfPlugin.cs" />
     <Compile Include="Modules\Games\FootballGame\CmdFootballGame.cs" />
-    <Compile Include="Modules\Games\FootballGame\Commands\CmdAka.cs" />
     <Compile Include="Modules\Games\FootballGame\Commands\CmdViewTeam.cs" />
     <Compile Include="Modules\Games\FootballGame\Commands\CmdFootballTeam.cs" />
     <Compile Include="Modules\Games\FootballGame\Commands\CmdLastLevels.cs" />

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using MCGalaxy.Games;
 
@@ -211,105 +212,115 @@ namespace MCGalaxy.Modules.Games.FootballGame
             if (PandaTeam.Score > HomerTeam.Score) {
                 Map.Message("&SThe &bPanda Team &Shas won this round!");
                 Map.Config.RoundsPandaTeamWon++;
+                AnnounceWinners(PandaTeam);
+                IncreasePlayerStats(PandaTeam, true);
+                IncreasePlayerStats(HomerTeam, false);
             }
             else if (HomerTeam.Score > PandaTeam.Score) {
                 Map.Message("&SThe &eHomer Team &Shas won this round!");
                 Map.Config.RoundsHomerTeamWon++;
+                AnnounceWinners(HomerTeam);
+                IncreasePlayerStats(HomerTeam, true);
+                IncreasePlayerStats(PandaTeam, false);
             }
             else {
                 Map.Message("&SBoth teams have tied this round!");
+                IncreasePlayerStats(PandaTeam, false);
+                IncreasePlayerStats(HomerTeam, false);
             }
 
-            AnnounceWinners(PandaTeam.Players.ToArray(), HomerTeam.Players.ToArray());
+            AnnounceScore();
             
             Map.Config.RoundsPlayed++;
-            if (alive.Length > 0) {
-                Map.Config.RoundsHumanWon++;
-                foreach (Player p in alive) { IncreaseAliveStats(p); }
-            }
             
-            GiveMoney(alive);
             Map.SaveSettings();
         }
-
-        void AnnounceWinners(Player[] alive, Player[] dead) {
-            if (alive.Length > 0) {
-                Map.Message(alive.Join(p => p.ColoredName)); return;
+        void AnnounceScore() {
+            if (PandaTeam.Score > HomerTeam.Score) {
+                Map.Message("&bPanda Team &S" + PandaTeam.Score + " - " + HomerTeam.Score + " &eHomer Team");
             }
-            
-            int maxKills = 0, count = 0;
-            for (int i = 0; i < dead.Length; i++) 
-            {
-                maxKills = Math.Max(maxKills, Get(dead[i]).CurrentInfected);
+            else if (HomerTeam.Score > PandaTeam.Score) {
+                Map.Message("&eHomer Team &S" + HomerTeam.Score + " - " + PandaTeam.Score + " &bPanda Team");
             }
-            for (int i = 0; i < dead.Length; i++) 
-            {
-                if (Get(dead[i]).CurrentInfected == maxKills) count++;
+            else {
+                Map.Message("&bPanda Team &S" + PandaTeam.Score + " - " + HomerTeam.Score + " &eHomer Team (Tied)");
             }
-            
-            string group = count == 1 ? " zombie " : " zombies ";
-            string suffix = maxKills == 1 ? " &Skill" : " &Skills";
-            StringFormatter<Player> formatter = p => Get(p).CurrentInfected == maxKills ? p.ColoredName : null;
-            Map.Message("&8Best" + group + "&S(&b" + maxKills + suffix + "&S)&8: " + dead.Join(formatter));
         }
 
-        void IncreaseAliveStats(Player p) {
-            ZSData data = Get(p);
-
-            if (data.PledgeSurvive) {
-                p.Message("You received &a5 &3" + Server.Config.Currency +
-                          " &Sfor successfully pledging that you would survive.");
-                p.SetMoney(p.money + 5);
+        void AnnounceWinners(FootballTeam winningTeam) {
+            if (winningTeam.Players.Count > 0) {
+                Map.Message(winningTeam.Players.Join(p => p.ColoredName)); return;
             }
-            
-            data.CurrentRoundsSurvived++;
-            data.TotalRoundsSurvived++;
-            data.MaxRoundsSurvived = Math.Max(data.CurrentRoundsSurvived, data.MaxRoundsSurvived);
-            p.SetPrefix(); // stars before name
+
+            int maxGoals = 0;
+            List<Player> bestScorers = new List<Player>();
+            for (int i = 0; i < winningTeam.Players.Count; i++) {
+                if (maxGoals <= Get(winningTeam.Players[i]).CurrentRoundGoals) 
+                {
+                    maxGoals = Get(winningTeam.Players[i]).CurrentRoundGoals;
+                    bestScorers.Add(winningTeam.Players[i]);
+                }
+            }
+
+            if (bestScorers.Count > 1) {
+                string formattedNames = string.Join(", ", bestScorers.Select(p => p.ColoredName));
+                Map.Message("&8Best scorers this round are " + formattedNames + " &8with &a" + maxGoals + " &8goals.");
+            }
+            else {
+                string bestScorer = bestScorers[0].ColoredName;
+                Map.Message("&8Best scorer this round is " + bestScorer + " &8with &a" + maxGoals + " &8goals.");
+            }
         }
 
-        void GiveMoney(Player[] alive) {
+        void IncreasePlayerStats(FootballTeam team, bool winningTeam) {
+
+            foreach (Player p in team.Players) {
+                FootballData data = Get(p);
+                if (winningTeam) {
+                    data.TotalWon++;
+                    data.MaxRoundGoals = Math.Max(data.MaxRoundGoals, data.CurrentRoundGoals);
+                }
+                else {
+                    data.TotalLost++;
+                }
+                GiveMoney(p, winningTeam);
+            }
+        }
+
+        void GiveMoney(Player p, bool winningTeam) {
             Player[] online = PlayerInfo.Online.Items;
             Random rand = new Random();
-            
-            foreach (Player pl in online) 
-            {
-                if (pl.level != Map) continue;
-                ZSData data = Get(pl);
-                data.ResetInvisibility();
-                RewardMoney(pl, data, alive, rand);
+
+            FootballData data = Get(p);
+            data.ResetInvisibility();
+            RewardMoney(p, data, winningTeam);
                 
-                ResetRoundState(pl, data);
-                data.PledgeSurvive = false;
-                
-                if (pl.Game.Referee) {
-                    pl.Message("You gained one " + Server.Config.Currency + " because you're a ref. Would you like a medal as well?");
-                    pl.SetMoney(pl.money + 1);
-                }
-                
-                RespawnPlayer(pl);
-                UpdateStatus3(pl);
+            ResetRoundState(p, data);
+ 
+            if (p.Game.Referee) {
+                p.Message("You gained one " + Server.Config.Currency + " because you're a ref. Would you like a medal as well?");
+                p.SetMoney(p.money + 1);
             }
+                
+            RespawnPlayer(p);
+            UpdateStatus3(p);
+            
         }
 
-        void RewardMoney(Player p, ZSData data, Player[] alive, Random rnd) {
+        void RewardMoney(Player p, FootballData data, bool winningTeam) {
             if (p.IsLikelyInsideBlock()) {
                 p.Message("You may not hide inside a block! No " + Server.Config.Currency + " for you.");
                 return;
             }
             
-            if (alive.Length == 0) {
-                AwardMoney(p, Config.ZombiesRewardMin, Config.ZombiesRewardMax,
-                           rnd, data.CurrentInfected * Config.ZombiesRewardMultiplier);
-            } else if (alive.Length == 1 && !p.infected) {
-                AwardMoney(p, Config.SoleHumanRewardMin, Config.SoleHumanRewardMax,
-                           rnd, 0);
-            } else if (alive.Length > 1 && !p.infected) {
-                AwardMoney(p, Config.HumansRewardMin, Config.HumansRewardMax,
-                           rnd, 0);
+            if (winningTeam) {
+                AwardMoney(p, Config.PlayerRewardMin, Config.PlayerRewardMax,
+                           new Random(), data.CurrentRoundGoals * Config.GoalScoredMultiplier);
+            } else { 
+                AwardMoney(p, Config.PlayerRewardMin, Config.PlayerRewardMin,
+                           new Random(), data.CurrentRoundGoals * Config.GoalScoredMultiplier);
             }
         }
-        
         
         public override void OutputTimeInfo(Player p) {
             TimeSpan delta = RoundEnd - DateTime.UtcNow;

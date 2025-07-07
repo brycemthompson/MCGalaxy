@@ -38,7 +38,7 @@
         /// </summary>
         /// <param name="p"></param>
         public void DisplayTeam(Player p) {
-            if (FootballGame.Instance.PandaTeam.HasMember(p)) {
+            if (FootballGame.Instance.PandaTeam.HasPlayer(p)) {
                 p.Message("&aYou are on the &bPanda Team&a.");
             }
             else {
@@ -52,8 +52,8 @@
         /// <param name="p"></param>
         /// <returns></returns>
         public bool HasTeam(Player p) {
-            return FootballGame.Instance.PandaTeam.HasMember(p) ||
-                   FootballGame.Instance.HomerTeam.HasMember(p);
+            return FootballGame.Instance.PandaTeam.HasPlayer(p) ||
+                   FootballGame.Instance.HomerTeam.HasPlayer(p);
         }
 
         /// <summary>
@@ -83,11 +83,11 @@
                 }
                 else {
                     if (team.CaselessEq(FootballGame.Instance.PandaTeam.Name)) {
-                        FootballGame.Instance.PandaTeam.AddMember(p.truename);
+                        FootballGame.Instance.PandaTeam.AddPlayer(p);
                         p.Message("&aYou have joined the &bPanda Team&a.");
                     }
                     else if (team.CaselessEq(FootballGame.Instance.HomerTeam.Name)) {
-                        FootballGame.Instance.HomerTeam.AddMember(p.truename);
+                        FootballGame.Instance.HomerTeam.AddPlayer(p);
                         p.Message("&aYou have joined the &eHomer Team&a.");
                     }
                 }
@@ -108,11 +108,11 @@
                 }
                 else {
                     if (team.CaselessEq(FootballGame.Instance.PandaTeam.Name)) {
-                        FootballGame.Instance.PandaTeam.RemoveMember(p.truename);
+                        FootballGame.Instance.PandaTeam.RemovePlayer(p);
                         p.Message("&aYou have &cleft &athe &bPanda Team&a.");
                     }
                     else if (team.CaselessEq(FootballGame.Instance.HomerTeam.Name)) {
-                        FootballGame.Instance.HomerTeam.RemoveMember(p.truename);
+                        FootballGame.Instance.HomerTeam.RemovePlayer(p);
                         p.Message("&aYou have &cleft &athe &eHomer Team&a.");
                     }
                 }

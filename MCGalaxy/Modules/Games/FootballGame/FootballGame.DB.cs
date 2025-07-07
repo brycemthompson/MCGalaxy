@@ -20,15 +20,16 @@ using MCGalaxy.DB;
 using MCGalaxy.Eco;
 using MCGalaxy.Games;
 using MCGalaxy.SQL;
+using System.Runtime.InteropServices;
 
 namespace MCGalaxy.Modules.Games.FootballGame
 {    
     public partial class FootballGame : RoundsGame 
     {
         //public int TotalWins, TotalLosses, MaxRoundGoals, MaxConsecutiveGoals, MaxConsecutiveWins;
-        struct FootballStats { public int TotalWon, TotalLost, MaxRoundGoals, MaxConsecutiveGoals, MaxConsecutiveWins; }
+        struct FootballStats { public int TotalWon, TotalLost, CurrentRoundGoals, MaxRoundGoals, MaxConsecutiveGoals, MaxConsecutiveWins; }
         
-        static TopStat statTotalWon, statTotalLost, statMaxRoundGoals, statMaxConsecutiveGoals, statMaxConsecutiveWins;
+        static TopStat statTotalWon, statTotalLost, statCurrentRoundGoals, statMaxRoundGoals, statMaxConsecutiveGoals, statMaxConsecutiveWins;
         static OfflineStatPrinter offlineFootballStats;
         static OnlineStatPrinter onlineFootballStats;
         static ChatToken wonToken, lostToken;
@@ -38,6 +39,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
                                              "FootballStats", "TotalWon", TopStat.FormatInteger);
             statTotalLost           = new DBTopStat("Losses", "Total rounds lost",
                                              "FootballStats", "TotalLost", TopStat.FormatInteger);
+            statCurrentRoundGoals   = new DBTopStat("CurrentRoundGoals", "Goals scored in the current round",
+                                             "FootballStats", "CurrentRoundGoals", TopStat.FormatInteger);
             statMaxRoundGoals       = new DBTopStat("MaxRoundGoals", "Most goals within a round",
                                              "FootballStats", "MaxRoundGoals", TopStat.FormatInteger);
             statMaxConsecutiveGoals = new DBTopStat("MaxConsecutiveGoals", "Most consecutive goals within a round", 
@@ -59,6 +62,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             
             TopStat.Register(statTotalWon);
             TopStat.Register(statTotalLost);
+            TopStat.Register(statCurrentRoundGoals);
             TopStat.Register(statMaxRoundGoals);
             TopStat.Register(statMaxConsecutiveGoals);
             TopStat.Register(statMaxConsecutiveWins);
@@ -72,6 +76,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             
             TopStat.Unregister(statTotalWon);
             TopStat.Unregister(statTotalLost);
+            TopStat.Unregister(statCurrentRoundGoals);
             TopStat.Unregister(statMaxRoundGoals);
             TopStat.Unregister(statMaxConsecutiveGoals);
             TopStat.Unregister(statMaxConsecutiveWins);
@@ -79,22 +84,23 @@ namespace MCGalaxy.Modules.Games.FootballGame
         
         static void PrintOnlineFootballStats(Player p, Player who) {
             FootballData data = Get(who);
-            PrintFootballStats(p, data.TotalWon, data.TotalLost,
-                         data.MaxRoundGoals, data.MaxConsecutiveGoals,
-                         data.MaxConsecutiveWins);
+            PrintFootballStats(p, data.TotalWon, data.TotalLost, 
+                        data.CurrentRoundGoals, data.MaxRoundGoals, 
+                        data.MaxConsecutiveGoals, data.MaxConsecutiveWins);
         }
         
         static void PrintOfflineFootballStats(Player p, PlayerData who) {
             FootballStats stats = LoadStats(who.Name);
             PrintFootballStats(p, stats.TotalWon, stats.TotalLost,
-                         stats.MaxRoundGoals, stats.MaxConsecutiveGoals,
-                         stats.MaxConsecutiveWins);
+                         stats.CurrentRoundGoals, stats.MaxRoundGoals, 
+                         stats.MaxConsecutiveGoals, stats.MaxConsecutiveWins);
         }
         
-        static void PrintFootballStats(Player p, int won, int lost, int goalsMax, int consecutiveGoalsMax, int consecutiveWinsMax) {
+        static void PrintFootballStats(Player p, int won, int lost, int currentRoundGoals, int goalsMax, int consecutiveGoalsMax, int consecutiveWinsMax) {
             p.Message("  Won &a{0} &Srounds (max consecutive &e{1}&S)", won, consecutiveWinsMax);
             p.Message("  Lost &a{0} &Srounds)", lost);
             p.Message("  Scored &a{0} &Sgoals (max consecutive &e{1}&S)", goalsMax, consecutiveGoalsMax);
+            p.Message("  Scored &a{0} &Sgoals in the current round", currentRoundGoals);
         }        
         
                 
@@ -103,6 +109,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             new ColumnDesc("Name", ColumnType.Char, 20),
             new ColumnDesc("TotalWon", ColumnType.Int32),
             new ColumnDesc("TotalLost", ColumnType.Int32),
+            new ColumnDesc("CurrentRoundGoals", ColumnType.Int32),
             new ColumnDesc("MaxRoundGoals", ColumnType.Int32),
             new ColumnDesc("MaxConsecutiveGoals", ColumnType.Int32),
             new ColumnDesc("MaxConsecutiveWins", ColumnType.Int32),
@@ -114,6 +121,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             FootballStats stats;
             stats.TotalWon              = record.GetInt("TotalWon");
             stats.TotalLost             = record.GetInt("TotalLost");
+            stats.CurrentRoundGoals     = record.GetInt("CurrentRoundGoals");
             stats.MaxRoundGoals         = record.GetInt("MaxRoundGoals");
             stats.MaxConsecutiveGoals   = record.GetInt("MaxConsecutiveGoals");
             stats.MaxConsecutiveWins    = record.GetInt("MaxConsecutiveWins");
@@ -138,10 +146,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 data.MaxConsecutiveWins, p.name
             };
             
-            int changed = Database.UpdateRows("FootballStats", "TotalWon=@0,TotalLost=@1,MaxRoundGoals=@2,MaxConsecutiveGoals=@3,MaxConsecutiveWins=@4",
-                                              "WHERE Name=@5", args);
+            int changed = Database.UpdateRows("FootballStats", "TotalWon=@0,TotalLost=@1,CurrentRoundGoals=@2,MaxRoundGoals=@3,MaxConsecutiveGoals=@4,MaxConsecutiveWins=@5",
+                                              "WHERE Name=@6", args);
             if (changed == 0) {
-                Database.AddRow("FootballStats", "TotalWon,TotalLost,MaxRoundGoals,MaxConsecutiveGoals,MaxConsecutiveWins,Name", args);
+                Database.AddRow("FootballStats", "TotalWon,TotalLost,CurrentRoundGoals,MaxRoundGoals,MaxConsecutiveGoals,MaxConsecutiveWins,Name", args);
             }
         }
         

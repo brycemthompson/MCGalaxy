@@ -21,11 +21,11 @@ namespace MCGalaxy.Modules.Games.FootballGame {
             }
         }
 
-        public bool HasMember(Player p) {
+        public bool HasPlayer(Player p) {
             return this.Players.Contains(p);
         }
 
-        public void RemoveMember(Player p) {
+        public void RemovePlayer (Player p) {
             Players.Remove(p);
         }
 

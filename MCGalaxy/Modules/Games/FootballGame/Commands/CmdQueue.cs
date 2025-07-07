@@ -31,10 +31,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
             string[] args = message.SplitSpaces();
             if (args.Length != 2) { Help(p); return; }
             string value = args[1];
-            
-            if (args[0].CaselessEq("zombie")) {
-                FootballGame.Instance.SetQueuedZombie(p, value);
-            } else if (args[0].CaselessEq("level")) {
+
+            if (args[0].CaselessEq("level")) {
                 FootballGame.Instance.SetQueuedLevel(p, value);
             } else {
                 Help(p);
@@ -42,8 +40,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
 
         public override void Help(Player p) {
-            p.Message("&T/Queue zombie [name]");
-            p.Message("&HNext round [name] will be infected/start zombie");
             p.Message("&T/Queue level [level]");
             p.Message("&HNext round [level] will be the level used");
         }

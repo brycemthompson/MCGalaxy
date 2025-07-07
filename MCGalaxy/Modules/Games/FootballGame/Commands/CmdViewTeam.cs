@@ -54,7 +54,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             List<Player> teamMembers = new List<Player>();
 
             foreach (Player player in onlinePlayers) {
-                if (team.HasMember(player)) {
+                if (team.HasPlayer(player)) {
                     teamMembers.Add(player);
                 }
             }
@@ -65,10 +65,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
 
         public FootballTeam GetTeam(Player p) {
-            if (FootballGame.Instance.PandaTeam.HasMember(p)) {
+            if (FootballGame.Instance.PandaTeam.HasPlayer(p)) {
                 return FootballGame.Instance.PandaTeam;
             }
-            else if (FootballGame.Instance.HomerTeam.HasMember(p)) {
+            else if (FootballGame.Instance.HomerTeam.HasPlayer(p)) {
                 return FootballGame.Instance.HomerTeam;
             }
             else {

@@ -33,7 +33,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
         public DateTime InvisibilityEnd;
         public List<string> GoalMessages;
 
-        public int TotalWon, TotalLost, MaxRoundGoals, MaxConsecutiveGoals, MaxConsecutiveWins;
+        public int TotalWon, TotalLost, CurrentRoundGoals, MaxRoundGoals, MaxConsecutiveGoals, MaxConsecutiveWins;
         public int InvisibilityTime = -1, InvisibilityPotions;
 
         public DateTime LastPillarWarn;
@@ -81,6 +81,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             data.GoalMessages = FootballConfig.LoadPlayerGoalMessages(p.name);
             data.TotalWon = s.TotalWon;     
             data.TotalLost = s.TotalLost;
+            data.CurrentRoundGoals = s.CurrentRoundGoals;
             data.MaxRoundGoals = s.MaxRoundGoals; 
             data.MaxConsecutiveGoals = s.MaxConsecutiveGoals;
             data.MaxConsecutiveWins = s.MaxConsecutiveWins;
@@ -152,8 +153,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
         public static bool IsInfected(Player p) { return p.infected; }
 
         public FootballTeam GetFootballTeam(Player p) {
-            if (PandaTeam.HasMember(p)) return PandaTeam;
-            else if (HomerTeam.HasMember(p)) return HomerTeam;
+            if (PandaTeam.HasPlayer(p)) return PandaTeam;
+            else if (HomerTeam.HasPlayer(p)) return HomerTeam;
             else return null; // Player is not on any team
         }
 
