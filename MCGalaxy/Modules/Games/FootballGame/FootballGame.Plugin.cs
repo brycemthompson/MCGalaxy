@@ -132,7 +132,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
             if (level != Map) return;
 
             FootballData data = Get(p);
-            data.PledgeWin = false;
             p.SetPrefix();
             
              

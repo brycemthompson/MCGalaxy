@@ -38,8 +38,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
 
         public DateTime LastPillarWarn;
         public bool PillarFined;
-        /// <summary> Whether the player has pledged that they will win this round. </summary>
-        public bool PledgeWin;
         
         public void ResetInvisibility() {
             Invisible = false;

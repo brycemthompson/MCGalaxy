@@ -33,7 +33,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
         protected override void DoRound() {
             if (!Running) return;
 
-            ResetPledges();
             List<Player> players = DoRoundCountdown(Config.FootballCountdown);
             if (players == null) return;
 
@@ -43,13 +42,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
             
             if (!Running) return;
             DoCoreGame();
-        }
-
-        void ResetPledges() {
-            foreach (Player pl in GetPlayers())
-            {
-                Get(pl).PledgeWin = false;
-            }
         }
 
         void StartRound(List<Player> players) {
@@ -68,9 +60,11 @@ namespace MCGalaxy.Modules.Games.FootballGame
 
                 if (teamFlipper) {
                     PandaTeam.AddPlayer(p);
+                    p.Message("&SJoined the &bPanda Team&S!");
                 }
                 else {
                     HomerTeam.AddPlayer(p);
+                    p.Message("&SJoined the &eHomer Team&S!");
                 }
                 players.Remove(p);
             }
