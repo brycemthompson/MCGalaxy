@@ -138,6 +138,7 @@ namespace MCGalaxy
 
             LoadCorePlugin(new MCGalaxy.Modules.Games.Countdown.CountdownPlugin());
             LoadCorePlugin(new MCGalaxy.Modules.Games.CTF.CTFPlugin());
+            LoadCorePlugin(new MCGalaxy.Modules.Games.FootballGame.FootballPlugin());
             LoadCorePlugin(new MCGalaxy.Modules.Games.LS.LSPlugin());
             LoadCorePlugin(new MCGalaxy.Modules.Games.TW.TWPlugin());
             LoadCorePlugin(new MCGalaxy.Modules.Games.ZS.ZSPlugin());

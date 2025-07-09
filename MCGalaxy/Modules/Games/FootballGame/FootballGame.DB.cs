@@ -19,6 +19,7 @@
 using MCGalaxy.DB;
 using MCGalaxy.Eco;
 using MCGalaxy.Games;
+using MCGalaxy.Modules.Games.FootballGame.Commands;
 using MCGalaxy.SQL;
 using System.Runtime.InteropServices;
 
@@ -155,16 +156,15 @@ namespace MCGalaxy.Modules.Games.FootballGame
         
         // TODO: Look into changing these commands as needed
         static void HookCommands() {
-            Command.TryRegister(true, cmdLastLevels, cmdQueue, cmdShowQueue);
+            Command.TryRegister(true, cmdFootballTeam, cmdViewTeam);
         }
         
         static void UnhookCommands() {
-            Command.Unregister(cmdLastLevels, cmdQueue, cmdShowQueue);
+            Command.Unregister(cmdFootballTeam, cmdViewTeam);
         }
         
-        static Command cmdLastLevels = new CmdLastLevels();
-        static Command cmdQueue      = new CmdQueue();
-        static Command cmdShowQueue  = new CmdShowQueue();
+        static Command cmdFootballTeam = new CmdFootballTeam();
+        static Command cmdViewTeam = new CmdViewTeam();
         
         static void HookItems() {
             Economy.RegisterItem(itemQueue);

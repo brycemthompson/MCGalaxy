@@ -54,17 +54,21 @@ namespace MCGalaxy.Modules.Games.FootballGame
         void RandomlyAssignTeams(List<Player> players) {
             Random rnd = new Random();
             bool teamFlipper = true;
-            for (int i = 0; i < players.Count; i++) {
+            int totalPlayers = players.Count;
+
+            for (int i = 0; i < totalPlayers; i++) {
                 int playerIndex = rnd.Next(0, players.Count);
                 Player p = players[playerIndex];
 
                 if (teamFlipper) {
                     PandaTeam.AddPlayer(p);
-                    p.Message("&SJoined the &bPanda Team&S!");
+                    Map.Message("&b" + p.name + " &Sjoined the &bPanda Team&S!");
+                    teamFlipper = false;
                 }
                 else {
                     HomerTeam.AddPlayer(p);
-                    p.Message("&SJoined the &eHomer Team&S!");
+                    Map.Message("&e" + p.name + " &Sjoined the &eHomer Team&S!");
+                    teamFlipper = true;
                 }
                 players.Remove(p);
             }

@@ -60,7 +60,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             }
 
             string formattedMembers = string.Join(", ", teamMembers.ConvertAll(player => player.ColoredName).ToArray());
-            p.Message("&S==== {0}{1} Team &S====");
+            p.Message("&S==== {0}{1} Team &S====", teamColor, team.Name);
             p.Message("{0}Team Members: {1}", teamColor, formattedMembers);
         }
 
@@ -77,8 +77,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
         
         public override void Help(Player p) {
-            p.Message("&T/Infected");
-            p.Message("&HShows who is infected/a zombie");
+            p.Message("&T/ViewTeam");
+            p.Message("&HShows who is currently on your football team.");
         }
     }
 }

@@ -78,18 +78,35 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
         
         void HandleTabListEntryAdded(Entity e, ref string tabName, ref string tabGroup, Player dst) {
+            // TODO: Fix tab list entries
             Player p = e as Player;
             FootballTeam team = GetFootballTeam(p);
+            /*Chat.MessageChat(Player.Console, "P Name: " + p.name);
+            Chat.MessageChat(Player.Console, "P level name: " + p.level.name);
+            Chat.MessageChat(Player.Console, "Map: " + Map.name);*/
+
             if (p == null || p.level != Map) return;
+
+            /*if (team == null) {
+                Chat.MessageChat(Player.Console, "I am null");
+                return;
+            }
+
+            Chat.MessageChat(Player.Console, "Football Team: " + team.Name);
+                */
             
             if (p.Game.Referee) {
                 tabGroup = "&2Referees";
             } else if (team == FootballGame.Instance.PandaTeam) {
                 tabGroup = Config.PandasTabListGroup;
                 tabName = "&b" + p.truename;
-            } else {
+            } else if (team == FootballGame.Instance.HomerTeam) {
                 tabGroup = Config.HomersTabListGroup;
                 tabName = "&e" + p.truename;
+            }
+            else {
+                tabGroup = "";
+                tabName = p.ColoredName;
             }
         }
         

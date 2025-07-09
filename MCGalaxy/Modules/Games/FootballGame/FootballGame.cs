@@ -241,7 +241,14 @@ namespace MCGalaxy.Modules.Games.FootballGame
         protected override string FormatStatus3(Player p) {
             FootballTeam footballTeam = GetFootballTeam(p);
             string money = "&a" + p.money + " &S" + Server.Config.Currency;
-            string team = ", you are on team " + footballTeam.Name;
+            string team = "";
+
+            if (footballTeam == null) {
+                team = ", you are not yet on a team.";    
+            }
+            else {
+                team = ", you are on team " + footballTeam.Name;
+            }
             return money + team;
         }
         
