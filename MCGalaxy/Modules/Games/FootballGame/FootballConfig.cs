@@ -44,10 +44,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
         [ConfigInt("collisions-check-interval", "Collisions", 150, 20, 2000)]
         public int CollisionsCheckInterval = 150;
         
-        [ConfigString("pandas-tablist-group", "Football", "&bPandas")]
-        public string PandasTabListGroup = "&bPandas";
-        [ConfigString("homers-tablist-group", "Football", "&eHomers")]
-        public string HomersTabListGroup = "&eHomers";
+        [ConfigString("pandas-tablist-group", "Football", "&3Pandas")]
+        public string PandasTabListGroup = "&3Pandas";
+        [ConfigString("homers-tablist-group", "Football", "&6Homers")]
+        public string HomersTabListGroup = "&6Homers";
         [ConfigBool("spectate-upon-death", "Football", true)]
         public bool SpectateUponDeath = true;
         [ConfigString("player-model-during-game", "Football", "humanoid")]

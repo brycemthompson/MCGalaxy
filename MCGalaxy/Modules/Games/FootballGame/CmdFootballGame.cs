@@ -45,31 +45,49 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 p.Message("Round time: &b{0}" + lCfg.RoundTime.Shorten(true, true));
                 return;
             }
-            if (args.Length < 3) { Help(p, "set"); return; }  
-            
+            if (prop.CaselessEq("ballreset")) {
+                game.RespawnBall();
+                return;
+            }
+            if (prop.CaselessEq("resetscore")) {
+                game.ResetScore();
+                return;
+            }
+
+            if (args.Length < 3) { Help(p, "set"); return; }
+
             if (prop.CaselessEq("hitbox")) {
                 if (!CommandParser.GetReal(p, args[2], "Hitbox detection", ref cfg.HitboxDist, 0, 4)) return;
                 p.Message("Set hitbox detection to &a" + cfg.HitboxDist + " &Sblocks apart");
-                
+
                 cfg.Save(); return;
             } else if (prop.CaselessEq("maxmove")) {
                 if (!CommandParser.GetReal(p, args[2], "Max move distance", ref cfg.MaxMoveDist, 0, 4)) return;
                 p.Message("Set max move distance to &a" + cfg.MaxMoveDist + " &Sblocks apart");
-                
+
                 cfg.Save(); return;
             } else if (prop.CaselessEq("pillaring")) {
                 if (!CommandParser.GetBool(p, args[2], ref lCfg.Pillaring)) return;
-                
+
                 p.Message("Set pillaring allowed to &b" + lCfg.Pillaring);
                 game.UpdateAllStatus2();
             } else if (prop.CaselessEq("build")) {
                 if (!CommandParser.GetEnum(p, args[2], "Build type", ref lCfg.BuildType)) return;
                 p.level.UpdateBlockPermissions();
-                
+
                 p.Message("Set build type to &b" + lCfg.BuildType);
                 game.UpdateAllStatus2();
             } else if (prop.CaselessEq("roundtime")) {
                 if (!ParseTimespan(p, "round time", args, ref lCfg.RoundTime)) return;
+            }
+            else if (prop.CaselessEq("ball")) {
+                if (args.Length < 5) {
+                    p.Message("Usage: &T/fb set ball <x> <y> <z>");
+                    return;
+                }
+                Position pos = new Position(int.Parse(args[2]), int.Parse(args[3]), int.Parse(args[4]));
+                game.BallSpawn = pos;
+                p.Message("Set ball spawn to &b{0}", pos.ToString());
             } else {
                 Help(p, "set"); return;
             }
@@ -108,6 +126,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
                 p.Message("&HSets build type of the map");
                 p.Message("&T/fb set roundtime [timespan]");
                 p.Message("&HSets how long a round is");
+                p.Message("&T/fb set ball x y z");
+                p.Message("&HSets the ball spawn location.");
             } else {
                 base.Help(p, message);
             }
@@ -121,6 +141,9 @@ namespace MCGalaxy.Modules.Games.FootballGame
             p.Message("&T/fb set [property] &H- Sets a property. See &T/Help fb set");
             p.Message("&T/fb status &H- Outputs current status of Football Game");
             p.Message("&T/fb go &H- Moves you to the current Football Game map");
+            p.Message("&T/fb ballreset &H- Respawn the ball at the saved spawn point.");
+            p.Message("&T/fb resetscore &H- Reset the score.");
+            p.Message("&HNOTE: Panda Team's goal is any Brown Mushroom (ID 39). Homer Team's goal is any Red Mushroom (ID 40).");
         }
     }
 }

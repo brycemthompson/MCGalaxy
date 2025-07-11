@@ -39,6 +39,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
         public DateTime LastPillarWarn;
         public bool PillarFined;
         
+        
         public void ResetInvisibility() {
             Invisible = false;
             InvisibilityEnd = DateTime.MinValue;
@@ -60,10 +61,12 @@ namespace MCGalaxy.Modules.Games.FootballGame
         }
         
         public DateTime RoundEnd;
+        public Position BallSpawn;
         public FootballTeam PandaTeam = new FootballTeam("Pandas");
         public FootballTeam HomerTeam = new FootballTeam("Homers");
-        public Player BallBot;
+        public PlayerBot BallBot;
         internal List<string> goalMessages = new List<string>();
+        public bool cooldown;
         
         static bool hooked;
         
@@ -108,7 +111,32 @@ namespace MCGalaxy.Modules.Games.FootballGame
             }
             return playing;
         }
-        
+
+        public void AnnounceGoal(string team) {
+            Chat.MessageGlobal("%aGoal for {0}!", team);
+            AnnounceScore();
+        }
+
+        public void RespawnBall() {
+            if (BallBot == null) return;
+            BallBot.Pos = BallSpawn;
+            BallBot.movementSpeed = 0;
+        }
+
+        // Returns true if the bot is above a brown mushroom (Team A goal)
+        public bool IsInPandasGoal(PlayerBot bot) {
+            ushort x = (ushort)bot.Pos.BlockX, y = (ushort)(bot.Pos.BlockY - 1), z = (ushort)bot.Pos.BlockZ;
+            byte block = (byte)bot.level.GetBlock(x, y, z);
+            return block == 39; // Brown Mushroom
+        }
+
+        // Returns true if the bot is above a red mushroom (Team B goal)
+        public bool IsInHomersGoal(PlayerBot bot) {
+            ushort x = (ushort)bot.Pos.BlockX, y = (ushort)(bot.Pos.BlockY - 1), z = (ushort)bot.Pos.BlockZ;
+            byte block = (byte)bot.level.GetBlock(x, y, z);
+            return block == 40; // Red Mushroom
+        }
+
         public override void OutputStatus(Player p) {
             p.Message("{0}: {1}, {2}: {3}", PandaTeam.Name, PandaTeam.Score, HomerTeam.Name, HomerTeam.Score);
         }
@@ -123,7 +151,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             Database.CreateTable("FootballStats", footballTable); 
             if (hooked) return;
             hooked = true;
-            ResetGoals();
+            ResetScore();
             HookStats();
             HookCommands();
             HookItems();
@@ -135,7 +163,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
             UnhookStats();
             UnhookCommands();
             UnhookItems();
-            ResetGoals();
+            ResetScore();
             
             Player[] players = PlayerInfo.Online.Items;
             foreach (Player pl in players) 
@@ -148,15 +176,13 @@ namespace MCGalaxy.Modules.Games.FootballGame
             }
         }
 
-        public static bool IsInfected(Player p) { return p.infected; }
-
         public FootballTeam GetFootballTeam(Player p) {
             if (PandaTeam.HasPlayer(p)) return PandaTeam;
             else if (HomerTeam.HasPlayer(p)) return HomerTeam;
             else return null; // Player is not on any team
         }
 
-        public void ResetGoals() {
+        public void ResetScore() {
             PandaTeam.Score = 0;
             HomerTeam.Score = 0;
         }
@@ -187,17 +213,6 @@ namespace MCGalaxy.Modules.Games.FootballGame
             bool announce = false;
             HandleJoinedLevel(p, Map, Map, ref announce);
         }
-
-        /*public override string GetPrefix(Player p) {
-            if (!Running) return "";
-            int winStreak = Get(p).CurrentRoundsSurvived;
-            
-            if      (winStreak == 1) return "&4*" + p.color;
-            else if (winStreak == 2) return "&7*" + p.color;
-            else if (winStreak == 3) return "&6*" + p.color;
-            else if (winStreak > 0)  return "&6"  + winStreak + p.color;
-            return "";
-        }*/
         
         public void GoInvisible(Player p, int duration) {
             FootballData data    = Get(p);

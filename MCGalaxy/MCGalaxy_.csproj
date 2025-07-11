@@ -564,6 +564,7 @@
     <Compile Include="Modules\Games\FootballGame\FootballGame.DB.cs" />
     <Compile Include="Modules\Games\FootballGame\FootballGame.Plugin.cs" />
     <Compile Include="Modules\Games\FootballGame\FootballGame.Round.cs" />
+    <Compile Include="Modules\Games\FootballGame\FootballInstruction.cs" />
     <Compile Include="Modules\Games\FootballGame\FootballItems.cs" />
     <Compile Include="Modules\Games\FootballGame\FootballPlugin.cs" />
     <Compile Include="Modules\Games\FootballGame\FootballTeam.cs" />

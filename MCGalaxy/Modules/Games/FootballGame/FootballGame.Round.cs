@@ -70,6 +70,8 @@ namespace MCGalaxy.Modules.Games.FootballGame
                     Map.Message("&e" + p.name + " &Sjoined the &eHomer Team&S!");
                     teamFlipper = true;
                 }
+                Entities.GlobalRespawn(p, false);
+                TabList.Add(p, p, Entities.SelfID);
                 players.Remove(p);
             }
         }

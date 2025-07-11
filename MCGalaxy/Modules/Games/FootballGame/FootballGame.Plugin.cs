@@ -97,10 +97,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
             
             if (p.Game.Referee) {
                 tabGroup = "&2Referees";
-            } else if (team == FootballGame.Instance.PandaTeam) {
+            } else if (team == Instance.PandaTeam) {
                 tabGroup = Config.PandasTabListGroup;
                 tabName = "&b" + p.truename;
-            } else if (team == FootballGame.Instance.HomerTeam) {
+            } else if (team == Instance.HomerTeam) {
                 tabGroup = Config.HomersTabListGroup;
                 tabName = "&e" + p.truename;
             }
@@ -121,10 +121,10 @@ namespace MCGalaxy.Modules.Games.FootballGame
             if (p == null) return;
 
             name = p.truename;
-            if (footballTeam == FootballGame.Instance.PandaTeam) {
+            if (footballTeam == Instance.PandaTeam) {
                 name = Colors.aqua + name;
             }
-            else if (footballTeam == FootballGame.Instance.HomerTeam) {
+            else if (footballTeam == Instance.HomerTeam) {
                 name = Colors.yellow + name;
             }
             else if (p.Game.Referee) {
@@ -170,15 +170,16 @@ namespace MCGalaxy.Modules.Games.FootballGame
         void HandlePlayerChat(Player p, string message) {
             if (p.level != Map || message.Length <= 1) return;
             
-            if (message[0] == '~') {
+            if (message[0] == '-') {
                 message = message.Substring(1);
+                FootballTeam team = GetFootballTeam(p);
                 
-                if (IsInfected(p)) {
-                    Chat.MessageChat(ChatScope.Level, p, "&c- to zombies - λNICK: &f" + message,
-                                    Map, (pl, arg) => pl.Game.Referee ||  IsInfected(pl));
+                if (team == Instance.PandaTeam) {
+                    Chat.MessageChat(ChatScope.Level, p, "&b- to Panda Team - λNICK: &f" + message,
+                                    Map, (pl, arg) => pl.Game.Referee || GetFootballTeam(pl).Equals(Instance.PandaTeam));
                 } else {
-                    Chat.MessageChat(ChatScope.Level, p, "&a- to humans - λNICK: &f" + message,
-                                    Map, (pl, arg) => pl.Game.Referee || !IsInfected(pl));
+                    Chat.MessageChat(ChatScope.Level, p, "&e- to Homer Team - λNICK: &f" + message,
+                                    Map, (pl, arg) => pl.Game.Referee || GetFootballTeam(pl).Equals(Instance.HomerTeam));
                 }
                 p.cancelchat = true;
             } else if (message[0] == '`') {
