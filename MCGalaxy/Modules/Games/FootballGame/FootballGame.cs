@@ -119,6 +119,7 @@ namespace MCGalaxy.Modules.Games.FootballGame
 
         public void RespawnBall() {
             if (BallBot == null) return;
+            // TODO: Spawn ball from position saved in json file
             BallBot.Pos = BallSpawn;
             BallBot.movementSpeed = 0;
         }

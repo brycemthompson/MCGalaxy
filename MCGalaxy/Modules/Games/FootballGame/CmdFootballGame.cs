@@ -18,6 +18,8 @@
  */
 using System;
 using System.ComponentModel;
+using System.IO;
+using System.Text.Json;
 using MCGalaxy.Commands;
 using MCGalaxy.Commands.Fun;
 using MCGalaxy.Games;
@@ -85,9 +87,20 @@ namespace MCGalaxy.Modules.Games.FootballGame
                     p.Message("Usage: &T/fb set ball <x> <y> <z>");
                     return;
                 }
+
                 Position pos = new Position(int.Parse(args[2]), int.Parse(args[3]), int.Parse(args[4]));
-                game.BallSpawn = pos;
-                p.Message("Set ball spawn to &b{0}", pos.ToString());
+                Level level = p.level;
+                if (level.IsValidPos(new Maths.Vec3U16((ushort)pos.X, (ushort)pos.Y, (ushort)pos.Z))) {
+                    string jsonString = JsonSerializer.Serialize(pos, new JsonSerializerOptions { WriteIndented = true });
+                    File.WriteAllText(p.level.MapName + ".json", jsonString);
+                    Logger.Log(LogType.GameActivity, "FootballGame: Saved ball spawn position to {0}.json", p.level.MapName);
+                    p.Message("Set ball spawn to &b{0}", pos.ToString());
+                }
+                else {
+                   p.Message("&cInvalid position! Please ensure the coordinates are within the map bounds.");
+                    return;
+                } 
+
             } else {
                 Help(p, "set"); return;
             }
